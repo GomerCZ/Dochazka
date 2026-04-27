@@ -6,36 +6,58 @@
     <title>Docházka Cloud</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Docházka">
-
     <link rel="apple-touch-icon" href="icon.png">
-
     
     <style>
         :root { --primary: #007AFF; --bg: #F2F2F7; --card: #FFFFFF; --holiday: #FFF2F2; }
-        body { font-family: -apple-system, system-ui, sans-serif; background-color: var(--bg); margin: 0; padding: 10px; color: #1C1C1E; }
+        
+        body { 
+            font-family: -apple-system, system-ui, sans-serif; 
+            background-color: var(--bg); 
+            margin: 0; 
+            padding: 0; /* Změněno na 0 kvůli sticky liště */
+            color: #1C1C1E; 
+        }
+
+        /* FIXNÍ HORNÍ ČÁST */
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background-color: var(--bg);
+            padding: 10px 10px 5px 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
         .container { width: 100%; max-width: 600px; margin: 0 auto; }
         
-        /* Horní lišta a nastavení */
         .controls { 
             background: var(--card); border-radius: 14px; padding: 12px; 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 10px;
+            margin-bottom: 8px;
         }
         .row { display: flex; gap: 8px; margin-bottom: 8px; }
         select, input[type="text"] { flex: 1; padding: 10px; border: 1px solid #DDD; border-radius: 8px; font-size: 1rem; }
         
         .summary-card {
-            background: var(--primary); color: white; border-radius: 14px; padding: 15px;
-            text-align: center; margin-bottom: 10px;
+            background: var(--primary); color: white; border-radius: 14px; padding: 10px;
+            text-align: center;
         }
-        .summary-card h1 { margin: 0; font-size: 2rem; }
+        .summary-card h1 { margin: 0; font-size: 1.6rem; }
+        .summary-card p { margin: 0; font-size: 0.8rem; opacity: 0.8; }
 
-        /* Tabulka */
-        .table-container { background: var(--card); border-radius: 14px; overflow-x: auto; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        /* SCROLLOVACÍ OBSAH (TABULKA) */
+        .content {
+            padding: 10px;
+        }
+
+        .table-container { 
+            background: var(--card); 
+            border-radius: 14px; 
+            overflow-x: auto; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
+        }
         table { width: 100%; border-collapse: collapse; min-width: 450px; }
-        th { background: #F9F9F9; padding: 8px; font-size: 0.7rem; color: #8E8E93; text-transform: uppercase; }
+        th { background: #F9F9F9; padding: 8px; font-size: 0.7rem; color: #8E8E93; text-transform: uppercase; text-align: left;}
         td { padding: 6px 8px; border-bottom: 1px solid #F2F2F7; font-size: 0.85rem; }
         
         .day-row.weekend { background-color: #FAFAFA; }
@@ -47,8 +69,8 @@
         .note-input { width: 100%; padding: 4px; border: 1px solid #EEE; border-radius: 4px; font-size: 0.8rem; box-sizing: border-box; }
         .hours-cell { font-weight: bold; color: var(--primary); text-align: right; width: 45px; }
 
-        .sync-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-        .btn { padding: 12px; border: none; border-radius: 10px; font-weight: bold; color: white; font-size: 0.9rem; }
+        .sync-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; padding-bottom: 30px; }
+        .btn { padding: 14px; border: none; border-radius: 12px; font-weight: bold; color: white; font-size: 0.9rem; cursor: pointer; }
         .btn-save { background: #34C759; }
         .btn-load { background: #5856D6; }
     </style>
@@ -56,65 +78,71 @@
 <body>
 
 <div class="container">
-    <div class="controls">
-        <div class="row">
-            <select id="selectMonth" onchange="initCalendar()"></select>
-            <select id="selectYear" onchange="initCalendar()"></select>
+    <div class="sticky-header">
+        <div class="controls">
+            <div class="row">
+                <select id="selectMonth" onchange="initCalendar()"></select>
+                <select id="selectYear" onchange="initCalendar()"></select>
+            </div>
+            <div class="row">
+                <input type="text" id="userName" placeholder="Jméno uživatele" onchange="saveUserName()">
+            </div>
         </div>
-        <div class="row">
-            <input type="text" id="userName" placeholder="Jméno (např. Osoba1)" onchange="saveUserName()">
+
+        <div class="summary-card">
+            <h1 id="totalHours">0.00 h</h1>
+            <p id="userStatus">Načítání...</p>
         </div>
     </div>
 
-    <div class="summary-card">
-        <h1 id="totalHours">0.00 h</h1>
-        <p id="userStatus">Docházka</p>
-    </div>
+    <div class="content">
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Den</th>
+                        <th>Od</th>
+                        <th>Do</th>
+                        <th>Poznámka</th>
+                        <th style="text-align:right">Hodin</th>
+                    </tr>
+                </thead>
+                <tbody id="calendarBody"></tbody>
+            </table>
+        </div>
 
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th>Den</th>
-                    <th>Od</th>
-                    <th>Do</th>
-                    <th>Poznámka</th>
-                    <th style="text-align:right">Hodin</th>
-                </tr>
-            </thead>
-            <tbody id="calendarBody"></tbody>
-        </table>
-    </div>
-
-    <div class="sync-buttons">
-        <button class="btn btn-save" onclick="syncToGoogle()">↑ Zálohovat Disk</button>
-        <button class="btn btn-load" onclick="syncFromGoogle()">↓ Načíst Disk</button>
+        <div class="sync-buttons">
+            <button class="btn btn-save" onclick="syncToGoogle()">↑ Zálohovat Disk</button>
+            <button class="btn btn-load" onclick="syncFromGoogle()">↓ Načíst Disk</button>
+        </div>
     </div>
 </div>
 
 <script>
-    // --- KONFIGURACE ---
+    // --- KONFIGURACE (VLOŽ SVOJI URL) ---
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyPHAL6Eji06WGRLk6Wwb7ebuKi86-tRasmVF9sDEV9EYnQ_6Qa29Oz09W-gKm6esKr/exec";
     
     let attendanceData = JSON.parse(localStorage.getItem('attendance_v4') || '{}');
     let currentUser = localStorage.getItem('attendance_user') || '';
-    document.getElementById('userName').value = currentUser;
-
+    
     const months = ["Leden", "Únor", "Březen", "Duben", "Květen", "Červen", "Červenec", "Srpen", "Září", "Říjen", "Listopad", "Prosinec"];
     const czechHolidays = {"01-01":"Nový rok","05-01":"Svátek práce","05-08":"Den vítězství","07-05":"Cyril a Metoděj","07-06":"Jan Hus","09-28":"Státnost","10-28":"Vznik ČSR","11-17":"Svoboda","12-24":"Štědrý den","12-25":"1. svátek","12-26":"2. svátek"};
-    const easterHolidays = {"2026-04-03":"Velký pátek","2026-04-06":"Velikonoce"}; // Pro rok 2026
+    const easterHolidays = {"2026-04-03":"Velký pátek","2026-04-06":"Velikonoce"};
 
     const selMonth = document.getElementById('selectMonth');
     const selYear = document.getElementById('selectYear');
     const now = new Date();
 
-    months.forEach((m, i) => selMonth.add(new Option(m, i, i===now.getMonth(), i===now.getMonth())));
-    for(let y = 2025; y <= 2027; y++) selYear.add(new Option(y, y, y===now.getFullYear(), y===now.getFullYear()));
+    // Inicializace výběrů
+    if (selMonth.options.length === 0) {
+        months.forEach((m, i) => selMonth.add(new Option(m, i, i===now.getMonth(), i===now.getMonth())));
+        for(let y = 2025; y <= 2027; y++) selYear.add(new Option(y, y, y===now.getFullYear(), y===now.getFullYear()));
+    }
 
     function saveUserName() {
         currentUser = document.getElementById('userName').value.trim();
         localStorage.setItem('attendance_user', currentUser);
-        document.getElementById('userStatus').innerText = "Docházka: " + currentUser;
+        document.getElementById('userStatus').innerText = "Uživatel: " + (currentUser || "Nepřihlášen");
     }
 
     function initCalendar() {
@@ -154,7 +182,8 @@
             tbody.appendChild(tr);
         }
         document.getElementById('totalHours').innerText = monthlyTotal.toFixed(2) + " h";
-        saveUserName();
+        document.getElementById('userName').value = currentUser;
+        document.getElementById('userStatus').innerText = "Uživatel: " + (currentUser || "Nepřihlášen");
     }
 
     function update(dateKey, field, value) {
@@ -165,19 +194,19 @@
     }
 
     async function syncToGoogle() {
-        if (!currentUser || SCRIPT_URL.includes("SEM_VLOZ")) return alert("Nastav jméno a SCRIPT_URL!");
+        if (!currentUser || SCRIPT_URL.includes("TVOJE_URL")) return alert("Nastav jméno a SCRIPT_URL!");
         try {
             await fetch(SCRIPT_URL, {
                 method: "POST",
                 mode: 'no-cors',
                 body: JSON.stringify({ user: currentUser, data: attendanceData })
             });
-            alert("Zálohováno do listu " + currentUser);
+            alert("Zálohováno!");
         } catch (e) { alert("Chyba synchronizace"); }
     }
 
     async function syncFromGoogle() {
-        if (!currentUser || SCRIPT_URL.includes("SEM_VLOZ")) return alert("Nastav jméno a SCRIPT_URL!");
+        if (!currentUser || SCRIPT_URL.includes("TVOJE_URL")) return alert("Nastav jméno a SCRIPT_URL!");
         try {
             const res = await fetch(`${SCRIPT_URL}?user=${currentUser}`);
             const json = await res.json();
