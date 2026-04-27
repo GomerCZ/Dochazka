@@ -3,73 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Docházka Cloud</title>
+    <title>Docházka Multi</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="icon.png">
     
     <style>
         :root { --primary: #007AFF; --bg: #F2F2F7; --card: #FFFFFF; --holiday: #FFF2F2; }
-        
-        body { 
-            font-family: -apple-system, system-ui, sans-serif; 
-            background-color: var(--bg); 
-            margin: 0; 
-            padding: 0; /* Změněno na 0 kvůli sticky liště */
-            color: #1C1C1E; 
-        }
+        body { font-family: -apple-system, system-ui, sans-serif; background-color: var(--bg); margin: 0; padding: 0; color: #1C1C1E; }
 
-        /* FIXNÍ HORNÍ ČÁST */
         .sticky-header {
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            background-color: var(--bg);
-            padding: 10px 10px 5px 10px;
+            position: sticky; top: 0; z-index: 1000;
+            background-color: var(--bg); padding: 10px 10px 5px 10px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
 
         .container { width: 100%; max-width: 600px; margin: 0 auto; }
-        
-        .controls { 
-            background: var(--card); border-radius: 14px; padding: 12px; 
-            margin-bottom: 8px;
-        }
+        .controls { background: var(--card); border-radius: 14px; padding: 12px; margin-bottom: 8px; }
         .row { display: flex; gap: 8px; margin-bottom: 8px; }
         select, input[type="text"] { flex: 1; padding: 10px; border: 1px solid #DDD; border-radius: 8px; font-size: 1rem; }
         
-        .summary-card {
-            background: var(--primary); color: white; border-radius: 14px; padding: 10px;
-            text-align: center;
-        }
+        .summary-card { background: var(--primary); color: white; border-radius: 14px; padding: 10px; text-align: center; }
         .summary-card h1 { margin: 0; font-size: 1.6rem; }
-        .summary-card p { margin: 0; font-size: 0.8rem; opacity: 0.8; }
 
-        /* SCROLLOVACÍ OBSAH (TABULKA) */
-        .content {
-            padding: 10px;
-        }
-
-        .table-container { 
-            background: var(--card); 
-            border-radius: 14px; 
-            overflow-x: auto; 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
-        }
-        table { width: 100%; border-collapse: collapse; min-width: 450px; }
-        th { background: #F9F9F9; padding: 8px; font-size: 0.7rem; color: #8E8E93; text-transform: uppercase; text-align: left;}
-        td { padding: 6px 8px; border-bottom: 1px solid #F2F2F7; font-size: 0.85rem; }
+        .content { padding: 10px; }
+        .table-container { background: var(--card); border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden; }
+        
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #F9F9F9; padding: 10px; font-size: 0.7rem; color: #8E8E93; text-transform: uppercase; text-align: left;}
+        td { padding: 8px 10px; border-bottom: 1px solid #F2F2F7; vertical-align: top; }
         
         .day-row.weekend { background-color: #FAFAFA; }
         .day-row.holiday { background-color: var(--holiday); }
-        .day-num { font-weight: bold; width: 30px; }
+        .day-num { font-weight: bold; width: 40px; font-size: 0.9rem; pt: 12px; }
         .holiday-name { font-size: 0.65rem; color: #FF3B30; display: block; font-weight: normal; }
-        
-        .time-input { width: 65px; padding: 4px; border: 1px solid #DDD; border-radius: 4px; font-size: 0.8rem; }
-        .note-input { width: 100%; padding: 4px; border: 1px solid #EEE; border-radius: 4px; font-size: 0.8rem; box-sizing: border-box; }
-        .hours-cell { font-weight: bold; color: var(--primary); text-align: right; width: 45px; }
 
-        .sync-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; padding-bottom: 30px; }
+        /* Intervaly */
+        .intervals-container { display: flex; flex-direction: column; gap: 8px; }
+        .interval-row { display: flex; align-items: center; gap: 5px; }
+        .time-input { width: 65px; padding: 6px; border: 1px solid #DDD; border-radius: 6px; font-size: 0.85rem; }
+        .btn-add { background: var(--primary); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; font-size: 1.2rem; line-height: 1; cursor: pointer; margin-top: 5px; }
+        .btn-del { color: #FF3B30; background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 0 5px; }
+
+        .note-input { width: 100%; margin-top: 8px; padding: 8px; border: 1px solid #EEE; border-radius: 8px; font-size: 0.8rem; box-sizing: border-box; }
+        .hours-cell { font-weight: bold; color: var(--primary); text-align: right; width: 60px; font-size: 0.9rem; padding-top: 12px; }
+
+        .sync-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0 40px 0; }
         .btn { padding: 14px; border: none; border-radius: 12px; font-weight: bold; color: white; font-size: 0.9rem; cursor: pointer; }
         .btn-save { background: #34C759; }
         .btn-load { background: #5856D6; }
@@ -88,7 +67,6 @@
                 <input type="text" id="userName" placeholder="Jméno uživatele" onchange="saveUserName()">
             </div>
         </div>
-
         <div class="summary-card">
             <h1 id="totalHours">0.00 h</h1>
             <p id="userStatus">Načítání...</p>
@@ -101,9 +79,7 @@
                 <thead>
                     <tr>
                         <th>Den</th>
-                        <th>Od</th>
-                        <th>Do</th>
-                        <th>Poznámka</th>
+                        <th>Časové úseky</th>
                         <th style="text-align:right">Hodin</th>
                     </tr>
                 </thead>
@@ -119,10 +95,10 @@
 </div>
 
 <script>
-    // --- KONFIGURACE (VLOŽ SVOJI URL) ---
+    // --- KONFIGURACE ---
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyPHAL6Eji06WGRLk6Wwb7ebuKi86-tRasmVF9sDEV9EYnQ_6Qa29Oz09W-gKm6esKr/exec";
     
-    let attendanceData = JSON.parse(localStorage.getItem('attendance_v4') || '{}');
+    let attendanceData = JSON.parse(localStorage.getItem('attendance_v5') || '{}');
     let currentUser = localStorage.getItem('attendance_user') || '';
     
     const months = ["Leden", "Únor", "Březen", "Duben", "Květen", "Červen", "Červenec", "Srpen", "Září", "Říjen", "Listopad", "Prosinec"];
@@ -133,7 +109,6 @@
     const selYear = document.getElementById('selectYear');
     const now = new Date();
 
-    // Inicializace výběrů
     if (selMonth.options.length === 0) {
         months.forEach((m, i) => selMonth.add(new Option(m, i, i===now.getMonth(), i===now.getMonth())));
         for(let y = 2025; y <= 2027; y++) selYear.add(new Option(y, y, y===now.getFullYear(), y===now.getFullYear()));
@@ -156,28 +131,56 @@
         for (let d = 1; d <= daysInMonth; d++) {
             const dateKey = `${year}-${String(month+1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
             const shortKey = `${String(month+1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-            const entry = attendanceData[dateKey] || { start: "", end: "", note: "" };
             
+            // Migrace nebo inicializace dat
+            if (!attendanceData[dateKey]) attendanceData[dateKey] = { intervals: [{start:"", end:""}], note: "" };
+            // Pokud jsou stará data (jen start/end), převeď je na pole
+            if (attendanceData[dateKey].start !== undefined) {
+                attendanceData[dateKey].intervals = [{start: attendanceData[dateKey].start, end: attendanceData[dateKey].end}];
+                delete attendanceData[dateKey].start;
+                delete attendanceData[dateKey].end;
+            }
+
             const dayObj = new Date(year, month, d);
             const isWeekend = (dayObj.getDay() === 0 || dayObj.getDay() === 6);
             const holidayName = czechHolidays[shortKey] || easterHolidays[dateKey] || "";
 
-            let rowHours = 0;
-            if (entry.start && entry.end) {
-                const s = new Date(`2000-01-01T${entry.start}`);
-                const e = new Date(`2000-01-01T${entry.end}`);
-                rowHours = Math.max(0, (e - s) / 3600000);
-                monthlyTotal += rowHours;
+            let dayTotal = 0;
+            let intervalsHTML = `<div class="intervals-container">`;
+            
+            attendanceData[dateKey].intervals.forEach((interval, idx) => {
+                if (interval.start && interval.end) {
+                    const s = new Date(`2000-01-01T${interval.start}`);
+                    const e = new Date(`2000-01-01T${interval.end}`);
+                    let diff = (e - s) / 3600000;
+                    if (diff < 0) diff += 24;
+                    dayTotal += diff;
+                }
+
+                intervalsHTML += `
+                    <div class="interval-row">
+                        <input type="time" class="time-input" value="${interval.start}" onchange="updateTime('${dateKey}', ${idx}, 'start', this.value)">
+                        <span>–</span>
+                        <input type="time" class="time-input" value="${interval.end}" onchange="updateTime('${dateKey}', ${idx}, 'end', this.value)">
+                        ${idx > 0 ? `<button class="btn-del" onclick="removeInterval('${dateKey}', ${idx})">✕</button>` : ''}
+                    </div>
+                `;
+            });
+
+            if (attendanceData[dateKey].intervals.length < 10) {
+                intervalsHTML += `<button class="btn-add" onclick="addInterval('${dateKey}')">+</button>`;
             }
+            intervalsHTML += `<input type="text" class="note-input" placeholder="Poznámka..." value="${attendanceData[dateKey].note||''}" onchange="updateNote('${dateKey}', this.value)">`;
+            intervalsHTML += `</div>`;
+
+            monthlyTotal += dayTotal;
 
             const tr = document.createElement('tr');
             tr.className = `day-row ${isWeekend ? 'weekend' : ''} ${holidayName ? 'holiday' : ''}`;
             tr.innerHTML = `
                 <td class="day-num">${d}.${holidayName ? `<span class="holiday-name">${holidayName}</span>` : ''}</td>
-                <td><input type="time" class="time-input" value="${entry.start}" onchange="update('${dateKey}','start',this.value)"></td>
-                <td><input type="time" class="time-input" value="${entry.end}" onchange="update('${dateKey}','end',this.value)"></td>
-                <td><input type="text" class="note-input" value="${entry.note||''}" onchange="update('${dateKey}','note',this.value)"></td>
-                <td class="hours-cell">${rowHours > 0 ? rowHours.toFixed(2) : ''}</td>
+                <td>${intervalsHTML}</td>
+                <td class="hours-cell">${dayTotal > 0 ? dayTotal.toFixed(2) : ''}</td>
             `;
             tbody.appendChild(tr);
         }
@@ -186,19 +189,40 @@
         document.getElementById('userStatus').innerText = "Uživatel: " + (currentUser || "Nepřihlášen");
     }
 
-    function update(dateKey, field, value) {
-        if (!attendanceData[dateKey]) attendanceData[dateKey] = { start: "", end: "", note: "" };
-        attendanceData[dateKey][field] = value;
-        localStorage.setItem('attendance_v4', JSON.stringify(attendanceData));
-        if (field !== 'note') initCalendar();
+    function updateTime(dateKey, idx, field, value) {
+        attendanceData[dateKey].intervals[idx][field] = value;
+        save();
+        initCalendar();
+    }
+
+    function updateNote(dateKey, value) {
+        attendanceData[dateKey].note = value;
+        save();
+    }
+
+    function addInterval(dateKey) {
+        if (attendanceData[dateKey].intervals.length < 10) {
+            attendanceData[dateKey].intervals.push({start: "", end: ""});
+            save();
+            initCalendar();
+        }
+    }
+
+    function removeInterval(dateKey, idx) {
+        attendanceData[dateKey].intervals.splice(idx, 1);
+        save();
+        initCalendar();
+    }
+
+    function save() {
+        localStorage.setItem('attendance_v5', JSON.stringify(attendanceData));
     }
 
     async function syncToGoogle() {
-        if (!currentUser || SCRIPT_URL.includes("TVOJE_URL")) return alert("Nastav jméno a SCRIPT_URL!");
+        if (!currentUser || SCRIPT_URL.includes("TVOJE_URL")) return alert("Nastav SCRIPT_URL!");
         try {
             await fetch(SCRIPT_URL, {
-                method: "POST",
-                mode: 'no-cors',
+                method: "POST", mode: 'no-cors',
                 body: JSON.stringify({ user: currentUser, data: attendanceData })
             });
             alert("Zálohováno!");
@@ -206,12 +230,10 @@
     }
 
     async function syncFromGoogle() {
-        if (!currentUser || SCRIPT_URL.includes("TVOJE_URL")) return alert("Nastav jméno a SCRIPT_URL!");
         try {
             const res = await fetch(`${SCRIPT_URL}?user=${currentUser}`);
-            const json = await res.json();
-            attendanceData = json;
-            localStorage.setItem('attendance_v4', JSON.stringify(attendanceData));
+            attendanceData = await res.json();
+            save();
             initCalendar();
             alert("Data stažena.");
         } catch (e) { alert("Chyba při stahování."); }
