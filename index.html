@@ -160,43 +160,65 @@
         document.getElementById('userStatus').innerText = "Uživatel: " + (currentUser || "Nepřihlášen");
     }
 
+        // Pomocná funkce pro výpočet hodin bez překreslování celé tabulky
+    function calculateTotals() {
+        let monthlyTotal = 0;
+        const year = parseInt(selYear.value);
+        const month = parseInt(selMonth.value);
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+    
+        for (let d = 1; d <= daysInMonth; d++) {
+            const dateKey = `${year}-${String(month+1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            const dayData = attendanceData[dateKey];
+            if (dayData && dayData.intervals) {
+                let dayTotal = 0;
+                dayData.intervals.forEach(interval => {
+                    if (interval.start && interval.end) {
+                        const s = new Date(`2000-01-01T${interval.start}`);
+                        const e = new Date(`2000-01-01T${interval.end}`);
+                        let diff = (e - s) / 3600000;
+                        if (diff < 0) diff += 24;
+                        dayTotal += diff;
+                    }
+                });
+                // Aktualizujeme zobrazení hodin u konkrétního řádku (pokud existuje)
+                const rowCell = document.getElementById(`hours-${dateKey}`);
+                if (rowCell) rowCell.innerText = dayTotal > 0 ? dayTotal.toFixed(2) : '';
+                monthlyTotal += dayTotal;
+            }
+        }
+        document.getElementById('totalHours').innerText = monthlyTotal.toFixed(2) + " h";
+    }
+    
+    // Upravená funkce updateTime - teď už nevyvolává initCalendar()
+    function updateTime(dateKey, idx, field, value) {
+        if (!attendanceData[dateKey]) attendanceData[dateKey] = { intervals: [{start:"", end:""}], note: "" };
+        attendanceData[dateKey].intervals[idx][field] = value;
+        save();
+        calculateTotals(); // Jen přepočítáme čísla, nepřekreslujeme HTML!
+    }
+    
+    // Upravený initCalendar - přidáme ID buňkám s hodinovým součtem
     function initCalendar() {
         const month = parseInt(selMonth.value);
         const year = parseInt(selYear.value);
         const daysInMonth = new Date(year, month + 1, 0).getDate();
         const tbody = document.getElementById('calendarBody');
         tbody.innerHTML = '';
-        let monthlyTotal = 0;
-
+        
+        // Načtení/Migrace dat (stejné jako předtím)
         for (let d = 1; d <= daysInMonth; d++) {
             const dateKey = `${year}-${String(month+1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
             const shortKey = `${String(month+1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
             
-            // Migrace nebo inicializace dat
             if (!attendanceData[dateKey]) attendanceData[dateKey] = { intervals: [{start:"", end:""}], note: "" };
-            // Pokud jsou stará data (jen start/end), převeď je na pole
-            if (attendanceData[dateKey].start !== undefined) {
-                attendanceData[dateKey].intervals = [{start: attendanceData[dateKey].start, end: attendanceData[dateKey].end}];
-                delete attendanceData[dateKey].start;
-                delete attendanceData[dateKey].end;
-            }
-
+    
             const dayObj = new Date(year, month, d);
             const isWeekend = (dayObj.getDay() === 0 || dayObj.getDay() === 6);
             const holidayName = czechHolidays[shortKey] || easterHolidays[dateKey] || "";
-
-            let dayTotal = 0;
+    
             let intervalsHTML = `<div class="intervals-container">`;
-            
             attendanceData[dateKey].intervals.forEach((interval, idx) => {
-                if (interval.start && interval.end) {
-                    const s = new Date(`2000-01-01T${interval.start}`);
-                    const e = new Date(`2000-01-01T${interval.end}`);
-                    let diff = (e - s) / 3600000;
-                    if (diff < 0) diff += 24;
-                    dayTotal += diff;
-                }
-
                 intervalsHTML += `
                     <div class="interval-row">
                         <input type="time" class="time-input" value="${interval.start}" onchange="updateTime('${dateKey}', ${idx}, 'start', this.value)">
@@ -206,33 +228,25 @@
                     </div>
                 `;
             });
-
+    
             if (attendanceData[dateKey].intervals.length < 10) {
                 intervalsHTML += `<button class="btn-add" onclick="addInterval('${dateKey}')">+</button>`;
             }
             intervalsHTML += `<input type="text" class="note-input" placeholder="Poznámka..." value="${attendanceData[dateKey].note||''}" onchange="updateNote('${dateKey}', this.value)">`;
             intervalsHTML += `</div>`;
-
-            monthlyTotal += dayTotal;
-
+    
             const tr = document.createElement('tr');
             tr.className = `day-row ${isWeekend ? 'weekend' : ''} ${holidayName ? 'holiday' : ''}`;
             tr.innerHTML = `
                 <td class="day-num">${d}.${holidayName ? `<span class="holiday-name">${holidayName}</span>` : ''}</td>
                 <td>${intervalsHTML}</td>
-                <td class="hours-cell">${dayTotal > 0 ? dayTotal.toFixed(2) : ''}</td>
+                <td class="hours-cell" id="hours-${dateKey}"></td> 
             `;
             tbody.appendChild(tr);
         }
-        document.getElementById('totalHours').innerText = monthlyTotal.toFixed(2) + " h";
+        calculateTotals(); // Prvotní výpočet po vykreslení
         document.getElementById('userName').value = currentUser;
         document.getElementById('userStatus').innerText = "Uživatel: " + (currentUser || "Nepřihlášen");
-    }
-
-    function updateTime(dateKey, idx, field, value) {
-        attendanceData[dateKey].intervals[idx][field] = value;
-        save();
-        initCalendar();
     }
 
     function updateNote(dateKey, value) {
