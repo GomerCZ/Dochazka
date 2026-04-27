@@ -9,47 +9,87 @@
     <link rel="apple-touch-icon" href="icon.png">
     
     <style>
-        :root { --primary: #007AFF; --bg: #F2F2F7; --card: #FFFFFF; --holiday: #FFF2F2; }
-        body { font-family: -apple-system, system-ui, sans-serif; background-color: var(--bg); margin: 0; padding: 0; color: #1C1C1E; }
-
+        :root { 
+            --primary: #007AFF; 
+            --bg: #F2F2F7; 
+            --card: #FFFFFF; 
+            --holiday: #FFF2F2; 
+            --text: #1C1C1E;
+            --border: #DDD;
+            --input-bg: #FFFFFF;
+        }
+    
+        /* Definice barev pro tmavý režim */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #000000; 
+                --card: #1C1C1E; 
+                --holiday: #2C1616; 
+                --text: #F2F2F7;
+                --border: #38383A;
+                --input-bg: #2C2C2E;
+            }
+            
+            /* Specifické úpravy pro tmavé prvky */
+            th { background: #2C2C2E !important; color: #8E8E93 !important; }
+            td { border-bottom: 1px solid #38383A !important; }
+            input, select { background: var(--input-bg) !important; color: var(--text) !important; border-color: var(--border) !important; }
+            .day-row.weekend { background-color: #121212 !important; }
+            .btn-del { color: #FF453A !important; }
+        }
+    
+        body { 
+            font-family: -apple-system, system-ui, sans-serif; 
+            background-color: var(--bg); 
+            margin: 0; padding: 0; 
+            color: var(--text); 
+            transition: background-color 0.3s, color 0.3s;
+        }
+    
         .sticky-header {
             position: sticky; top: 0; z-index: 1000;
             background-color: var(--bg); padding: 10px 10px 5px 10px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
-
+    
         .container { width: 100%; max-width: 600px; margin: 0 auto; }
         .controls { background: var(--card); border-radius: 14px; padding: 12px; margin-bottom: 8px; }
         .row { display: flex; gap: 8px; margin-bottom: 8px; }
-        select, input[type="text"] { flex: 1; padding: 10px; border: 1px solid #DDD; border-radius: 8px; font-size: 1rem; }
+        
+        /* Vylepšené inputy */
+        select, input[type="text"], .time-input { 
+            flex: 1; padding: 10px; border: 1px solid var(--border); 
+            border-radius: 8px; font-size: 1rem; 
+            background: var(--input-bg); color: var(--text);
+        }
         
         .summary-card { background: var(--primary); color: white; border-radius: 14px; padding: 10px; text-align: center; }
         .summary-card h1 { margin: 0; font-size: 1.6rem; }
-
+    
         .content { padding: 10px; }
-        .table-container { background: var(--card); border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden; }
+        .table-container { background: var(--card); border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; }
         
         table { width: 100%; border-collapse: collapse; }
         th { background: #F9F9F9; padding: 10px; font-size: 0.7rem; color: #8E8E93; text-transform: uppercase; text-align: left;}
         td { padding: 8px 10px; border-bottom: 1px solid #F2F2F7; vertical-align: top; }
-        
+    
         .day-row.weekend { background-color: #FAFAFA; }
         .day-row.holiday { background-color: var(--holiday); }
-        .day-num { font-weight: bold; width: 40px; font-size: 0.9rem; pt: 12px; }
+        .day-num { font-weight: bold; width: 40px; font-size: 0.9rem; }
         .holiday-name { font-size: 0.65rem; color: #FF3B30; display: block; font-weight: normal; }
 
-        /* Intervaly */
         .intervals-container { display: flex; flex-direction: column; gap: 8px; }
         .interval-row { display: flex; align-items: center; gap: 5px; }
-        .time-input { width: 65px; padding: 6px; border: 1px solid #DDD; border-radius: 6px; font-size: 0.85rem; }
-        .btn-add { background: var(--primary); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; font-size: 1.2rem; line-height: 1; cursor: pointer; margin-top: 5px; }
+        .time-input { width: 75px; padding: 6px; box-sizing: border-box; } /* Mírně širší pro lepší čitelnost */
+    
+        .btn-add { background: var(--primary); color: white; border: none; border-radius: 50%; width: 26px; height: 26px; font-size: 1.2rem; cursor: pointer; margin-top: 5px; display: flex; align-items: center; justify-content: center; }
         .btn-del { color: #FF3B30; background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 0 5px; }
 
-        .note-input { width: 100%; margin-top: 8px; padding: 8px; border: 1px solid #EEE; border-radius: 8px; font-size: 0.8rem; box-sizing: border-box; }
+        .note-input { width: 100%; margin-top: 8px; padding: 8px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.8rem; box-sizing: border-box; background: var(--input-bg); color: var(--text); }
         .hours-cell { font-weight: bold; color: var(--primary); text-align: right; width: 60px; font-size: 0.9rem; padding-top: 12px; }
 
         .sync-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0 40px 0; }
-        .btn { padding: 14px; border: none; border-radius: 12px; font-weight: bold; color: white; font-size: 0.9rem; cursor: pointer; }
+        .btn { padding: 14px; border: none; border-radius: 12px; font-weight: bold; color: white; font-size: 0.9rem; cursor: pointer; -webkit-appearance: none; }
         .btn-save { background: #34C759; }
         .btn-load { background: #5856D6; }
     </style>
